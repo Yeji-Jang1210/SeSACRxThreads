@@ -29,10 +29,6 @@ class PasswordViewController: UIViewController {
         bind()
     }
     
-    @objc func nextButtonClicked() {
-        navigationController?.pushViewController(PhoneViewController(), animated: true)
-    }
-    
     func configureLayout() {
         view.addSubview(passwordTextField)
         view.addSubview(nextButton)
@@ -77,7 +73,7 @@ class PasswordViewController: UIViewController {
         
         nextButton.rx.tap
             .bind(with: self) { owner, _ in
-                print("show alert")
+                owner.navigationController?.pushViewController(PhoneViewController(), animated: true)
             }
             .disposed(by: disposeBag)
     }
