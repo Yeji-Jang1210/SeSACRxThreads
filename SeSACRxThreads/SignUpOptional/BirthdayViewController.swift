@@ -6,6 +6,8 @@
 //
  
 import UIKit
+import RxSwift
+import RxCocoa
 import SnapKit
 
 class BirthdayViewController: UIViewController {
@@ -65,6 +67,11 @@ class BirthdayViewController: UIViewController {
     }()
   
     let nextButton = PointButton(title: "가입하기")
+    let disposeBag = DisposeBag()
+    
+    let yearText = PublishRelay<Int>()
+    let monthText = PublishRelay<Int>()
+    let dayText = PublishRelay<Int>()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -73,7 +80,7 @@ class BirthdayViewController: UIViewController {
         
         configureLayout()
         
-        nextButton.addTarget(self, action: #selector(nextButtonClicked), for: .touchUpInside)
+        bind()
     }
     
     @objc func nextButtonClicked() {
@@ -111,6 +118,40 @@ class BirthdayViewController: UIViewController {
             make.top.equalTo(birthDayPicker.snp.bottom).offset(30)
             make.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(20)
         }
+    }
+    
+    private func bind(){
+        nextButton.rx.tap
+            .bind(with: self){ owner, _ in
+                owner.navigationController?.pushViewController(SearchViewController(), animated: true)
+            }
+            .disposed(by: disposeBag)
+        
+        yearText
+            .map{ "\($0)년" }
+            .bind(to: yearLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        monthText
+            .map{ "\($0)월" }
+            .bind(to: monthLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        dayText
+            .map{ "\($0)일" }
+            .bind(to: dayLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        birthDayPicker.rx.date
+            .bind(with: self) { owner, date in
+                let component = Calendar.current.dateComponents([.day, .month, .year], from: date)
+                
+                print(component)
+                owner.yearText.accept(component.year!)
+                owner.monthText.accept(component.month!)
+                owner.dayText.accept(component.day!)
+            }
+            .disposed(by: disposeBag)
     }
 
 }

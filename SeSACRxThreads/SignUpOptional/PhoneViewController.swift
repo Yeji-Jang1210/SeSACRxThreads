@@ -4,19 +4,19 @@
 //
 //  Created by jack on 2023/10/30.
 //
- 
+
 import UIKit
 import RxSwift
 import RxCocoa
 import SnapKit
 
 class PhoneViewController: UIViewController {
-   
+    
     let phoneTextField = SignTextField(placeholderText: "연락처를 입력해주세요")
     let nextButton = PointButton(title: "다음")
     let descriptionLabel = UILabel()
     
-    let phoneNumber = Observable.just("010")
+    let phoneNumber = BehaviorRelay(value: "010")
     let validText = BehaviorRelay(value: "")
     let isValidation = BehaviorRelay(value: false)
     
@@ -24,7 +24,7 @@ class PhoneViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         view.backgroundColor = Color.white
         
         configureLayout()
@@ -35,13 +35,13 @@ class PhoneViewController: UIViewController {
     @objc func nextButtonClicked() {
         navigationController?.pushViewController(NicknameViewController(), animated: true)
     }
-
+    
     
     func configureLayout() {
         view.addSubview(phoneTextField)
         view.addSubview(nextButton)
         view.addSubview(descriptionLabel)
-         
+        
         phoneTextField.snp.makeConstraints { make in
             make.height.equalTo(50)
             make.top.equalTo(view.safeAreaLayoutGuide).offset(200)
@@ -68,10 +68,14 @@ class PhoneViewController: UIViewController {
         
         phoneTextField.rx.text.orEmpty
             .bind(with: self) { owner, text in
-                if Int(text) == nil {
+                let phoneNumber = text.replacingOccurrences(of: "-", with: "")
+                print(phoneNumber)
+                if Int(phoneNumber) == nil {
                     owner.validText.accept("숫자만 입력해주세요.")
                     owner.isValidation.accept(false)
                     return
+                } else {
+                    owner.phoneNumber.accept(owner.format(phoneNumber: phoneNumber))
                 }
                 
                 if text.count < 10 {
@@ -105,5 +109,25 @@ class PhoneViewController: UIViewController {
         .disposed(by: disposeBag)
         
     }
-
+    
+    private func format(phoneNumber: String) -> String {
+        var formatted = ""
+        let length = phoneNumber.count
+        
+        if length > 0 {
+            formatted += String(phoneNumber.prefix(3))
+        }
+        if length > 3 {
+            let start = phoneNumber.index(phoneNumber.startIndex, offsetBy: 3)
+            let end = phoneNumber.index(phoneNumber.startIndex, offsetBy: min(7, length))
+            formatted += "-" + phoneNumber[start..<end]
+        }
+        if length > 7 {
+            let start = phoneNumber.index(phoneNumber.startIndex, offsetBy: 7)
+            formatted += "-" + phoneNumber[start...]
+        }
+        
+        return formatted
+    }
+    
 }
