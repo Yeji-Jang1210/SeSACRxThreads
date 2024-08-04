@@ -73,6 +73,8 @@ class BirthdayViewController: UIViewController {
     let monthText = PublishRelay<Int>()
     let dayText = PublishRelay<Int>()
     
+    let isValid = BehaviorRelay(value: false)
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -147,9 +149,24 @@ class BirthdayViewController: UIViewController {
                 let component = Calendar.current.dateComponents([.day, .month, .year], from: date)
                 
                 print(component)
+                
+                if let age = Calendar.current.dateComponents([.year], from: date, to: Date.now).year {
+                    owner.isValid.accept(age >= 17 ? true : false)
+                }
+                
                 owner.yearText.accept(component.year!)
                 owner.monthText.accept(component.month!)
                 owner.dayText.accept(component.day!)
+            }
+            .disposed(by: disposeBag)
+        
+        isValid
+            .bind(to: infoLabel.rx.isHidden, nextButton.rx.isEnabled)
+            .disposed(by: disposeBag)
+        
+        isValid
+            .bind(with: self) { owner, isValid in
+                owner.nextButton.backgroundColor = isValid ? .black : .lightGray
             }
             .disposed(by: disposeBag)
     }
