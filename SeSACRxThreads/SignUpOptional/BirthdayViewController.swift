@@ -24,7 +24,6 @@ class BirthdayViewController: UIViewController {
     let infoLabel: UILabel = {
        let label = UILabel()
         label.textColor = Color.black
-        label.text = "만 17세 이상만 가입 가능합니다."
         return label
     }()
     
@@ -161,12 +160,18 @@ class BirthdayViewController: UIViewController {
             .disposed(by: disposeBag)
         
         isValid
-            .bind(to: infoLabel.rx.isHidden, nextButton.rx.isEnabled)
+            .bind(to: nextButton.rx.isEnabled)
+            .disposed(by: disposeBag)
+        
+        isValid
+            .map{ $0 ? "가입가능한 나이입니다." : "만 17세 이상만 가입이 가능합니다." }
+            .bind(to: infoLabel.rx.text)
             .disposed(by: disposeBag)
         
         isValid
             .bind(with: self) { owner, isValid in
-                owner.nextButton.backgroundColor = isValid ? .black : .lightGray
+                owner.nextButton.backgroundColor = isValid ? .blue : .lightGray
+                owner.infoLabel.textColor = isValid ? .blue : .red
             }
             .disposed(by: disposeBag)
     }
