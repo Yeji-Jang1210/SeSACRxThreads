@@ -60,42 +60,19 @@ class ShoppingListViewController: UIViewController, UITableViewDelegate {
     }
     
     private func bind(){
-        let input = ShoppingListViewModel.Input(viewDidAppear: viewDidAppearTrigger, searchText: searchView.searchTextField.rx.text.orEmpty)
+        let input = ShoppingListViewModel.Input(viewDidAppear: viewDidAppearTrigger,
+                                                searchText: searchView.searchTextField.rx.text.orEmpty, tableViewModelSelected: tableView.rx.modelSelected(ShoppingListTableViewCellViewModel.self),
+                                                addButtonTap: searchView.searchButton.rx.tap)
         
         let output = viewModel.transform(input: input)
         
-//        output.shoppingLists
-//            .bind(to: tableView.rx.items){ tableView, row, item in
-//                let indexPath = IndexPath(row: row, section: 0)
-//                let cell = tableView.dequeueReusableCell(withIdentifier: ShoppingListTableViewCell.identifier, for: indexPath) as! ShoppingListTableViewCell
-//                cell.checkButton.isSelected = item.isCheck
-//                cell.likeButton.isSelected = item.isLike
-//                cell.titleLabel.text = item.title
-//                
-//                cell.checkButton.rx.tap
-//                    .bind {
-//                        cell.checkButton.isSelected = !cell.checkButton.isSelected
-//                    }
-//                    .disposed(by: cell.disposeBag)
-//                
-//                cell.likeButton.rx.tap
-//                    .bind {
-//                        cell.likeButton.isSelected = !cell.likeButton.isSelected
-//                    }
-//                    .disposed(by: cell.disposeBag)
-//                
-//                return cell
-//            }
-//            .disposed(by: disposeBag)
+        output.tableViewModelSelected
+            .bind(with: self) { owner, viewModel in
+                let vc = ShoppingItemDetailViewController(title: viewModel.item.title)
+                owner.navigationController?.pushViewController(vc, animated: true)
+            }
+            .disposed(by: disposeBag)
         
-//        output.tableViewSelected
-//            .bind(with: self) { owner, item in
-//                let vc = ShoppingItemDetailViewController(title: item.title)
-//                owner.navigationController?.pushViewController(vc, animated: true)
-//            }
-//            .disposed(by: disposeBag)
-        
-        //item type: viewModel?
         output.items
             .asDriver(onErrorJustReturn: [])
             .drive(tableView.rx.items(cellIdentifier: ShoppingListTableViewCell.identifier, cellType: ShoppingListTableViewCell.self)) { indexPath, viewModel, cell in
