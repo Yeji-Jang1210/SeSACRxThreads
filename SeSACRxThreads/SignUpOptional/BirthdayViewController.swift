@@ -66,13 +66,9 @@ class BirthdayViewController: UIViewController {
     }()
   
     let nextButton = PointButton(title: "가입하기")
+    
+    let viewModel = BirthdayViewModel()
     let disposeBag = DisposeBag()
-    
-    let yearText = PublishRelay<Int>()
-    let monthText = PublishRelay<Int>()
-    let dayText = PublishRelay<Int>()
-    
-    let isValid = BehaviorRelay(value: false)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -83,11 +79,6 @@ class BirthdayViewController: UIViewController {
         
         bind()
     }
-    
-    @objc func nextButtonClicked() {
-        navigationController?.pushViewController(SearchViewController(), animated: true)
-    }
-
     
     func configureLayout() {
         view.addSubview(infoLabel)
@@ -122,54 +113,47 @@ class BirthdayViewController: UIViewController {
     }
     
     private func bind(){
-        nextButton.rx.tap
+        
+        let input = BirthdayViewModel.Input(nextButtonTap: nextButton.rx.tap, birthday: birthDayPicker.rx.date)
+        
+        let output = viewModel.transform(input: input)
+        
+        output.nextButtonTap
             .bind(with: self){ owner, _ in
                 owner.navigationController?.pushViewController(SearchViewController(), animated: true)
             }
             .disposed(by: disposeBag)
         
-        yearText
+        output.yearText
             .map{ "\($0)년" }
             .bind(to: yearLabel.rx.text)
             .disposed(by: disposeBag)
         
-        monthText
+        output.monthText
             .map{ "\($0)월" }
             .bind(to: monthLabel.rx.text)
             .disposed(by: disposeBag)
         
-        dayText
+        output.dayText
             .map{ "\($0)일" }
             .bind(to: dayLabel.rx.text)
             .disposed(by: disposeBag)
         
-        birthDayPicker.rx.date
-            .bind(with: self) { owner, date in
-                let component = Calendar.current.dateComponents([.day, .month, .year], from: date)
-                
-                print(component)
-                
-                if let age = Calendar.current.dateComponents([.year], from: date, to: Date.now).year {
-                    owner.isValid.accept(age >= 17 ? true : false)
-                }
-                
-                owner.yearText.accept(component.year!)
-                owner.monthText.accept(component.month!)
-                owner.dayText.accept(component.day!)
-            }
+        
+        output.isValid
+            .asDriver()
+            .drive(nextButton.rx.isEnabled)
             .disposed(by: disposeBag)
         
-        isValid
-            .bind(to: nextButton.rx.isEnabled)
-            .disposed(by: disposeBag)
-        
-        isValid
+        output.isValid
+            .asDriver()
             .map{ $0 ? "가입가능한 나이입니다." : "만 17세 이상만 가입이 가능합니다." }
-            .bind(to: infoLabel.rx.text)
+            .drive(infoLabel.rx.text)
             .disposed(by: disposeBag)
         
-        isValid
-            .bind(with: self) { owner, isValid in
+        output.isValid
+            .asDriver()
+            .drive(with: self){ owner, isValid in
                 owner.nextButton.backgroundColor = isValid ? .blue : .lightGray
                 owner.infoLabel.textColor = isValid ? .blue : .red
             }

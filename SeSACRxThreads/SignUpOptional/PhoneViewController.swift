@@ -16,10 +16,7 @@ class PhoneViewController: UIViewController {
     let nextButton = PointButton(title: "다음")
     let descriptionLabel = UILabel()
     
-    let phoneNumber = BehaviorRelay(value: "010")
-    let validText = BehaviorRelay(value: "")
-    let isValidation = BehaviorRelay(value: false)
-    
+    let viewModel = PhoneViewModel()
     let disposeBag = DisposeBag()
     
     override func viewDidLoad() {
@@ -62,72 +59,37 @@ class PhoneViewController: UIViewController {
     }
     
     private func bind(){
-        phoneNumber
+        
+        let input = PhoneViewModel.Input(phoneNumber: phoneTextField.rx.text.orEmpty, nextButtonTap: nextButton.rx.tap)
+        
+        let output = viewModel.transform(input: input)
+        
+        output.phoneNumber
             .bind(to: phoneTextField.rx.text)
             .disposed(by: disposeBag)
-        
-        phoneTextField.rx.text.orEmpty
-            .bind(with: self) { owner, text in
-                let phoneNumber = text.replacingOccurrences(of: "-", with: "")
-                print(phoneNumber)
-                if Int(phoneNumber) == nil {
-                    owner.validText.accept("숫자만 입력해주세요.")
-                    owner.isValidation.accept(false)
-                    return
-                } else {
-                    owner.phoneNumber.accept(owner.format(phoneNumber: phoneNumber))
-                }
-                
-                if text.count < 10 {
-                    owner.validText.accept("10자리 이상 입력해주세요.")
-                    owner.isValidation.accept(false)
-                    return
-                }
-                
-                return owner.isValidation.accept(true)
-            }
+           
+        output.isValid
+            .asDriver()
+            .drive(nextButton.rx.isEnabled, descriptionLabel.rx.isHidden)
             .disposed(by: disposeBag)
         
-        isValidation
-            .bind(to: nextButton.rx.isEnabled, descriptionLabel.rx.isHidden)
-            .disposed(by: disposeBag)
-        
-        isValidation
-            .bind(with: self) { owner, value in
+        output.isValid
+            .asDriver()
+            .drive(with: self) { owner, value in
                 let color: UIColor = value ? .systemPink : .lightGray
                 owner.nextButton.backgroundColor = color
             }
             .disposed(by: disposeBag)
         
-        validText
+        output.validText
             .bind(to: descriptionLabel.rx.text)
             .disposed(by: disposeBag)
         
-        nextButton.rx.tap.bind(with: self) { owner, _ in
+        output.nextButtonTap
+            .bind(with: self) { owner, _ in
             owner.navigationController?.pushViewController(NicknameViewController(), animated: true)
         }
         .disposed(by: disposeBag)
         
     }
-    
-    private func format(phoneNumber: String) -> String {
-        var formatted = ""
-        let length = phoneNumber.count
-        
-        if length > 0 {
-            formatted += String(phoneNumber.prefix(3))
-        }
-        if length > 3 {
-            let start = phoneNumber.index(phoneNumber.startIndex, offsetBy: 3)
-            let end = phoneNumber.index(phoneNumber.startIndex, offsetBy: min(7, length))
-            formatted += "-" + phoneNumber[start..<end]
-        }
-        if length > 7 {
-            let start = phoneNumber.index(phoneNumber.startIndex, offsetBy: 7)
-            formatted += "-" + phoneNumber[start...]
-        }
-        
-        return formatted
-    }
-    
 }

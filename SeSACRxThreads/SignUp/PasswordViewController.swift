@@ -16,7 +16,7 @@ class PasswordViewController: UIViewController {
     let nextButton = PointButton(title: "다음")
     let descriptionLabel = UILabel()
     
-    let validText = Observable.just("8자리 이상 입력해주세요.")
+    let viewModel = PasswordViewModel()
     let disposeBag = DisposeBag()
     
     override func viewDidLoad() {
@@ -54,24 +54,26 @@ class PasswordViewController: UIViewController {
     }
     
     private func bind(){
-        validText
+        let input = PasswordViewModel.Input(password: passwordTextField.rx.text.orEmpty, nextButtonTap: nextButton.rx.tap)
+        
+        let output = viewModel.transform(input: input)
+        
+        output.validText
             .bind(to: descriptionLabel.rx.text)
             .disposed(by: disposeBag)
-        
-        let validation = passwordTextField.rx.text.orEmpty
-                                .map{ $0.count >= 8 }
-        validation
+                                
+        output.isValid
             .bind(to: nextButton.rx.isEnabled, descriptionLabel.rx.isHidden)
             .disposed(by: disposeBag)
         
-        validation
+        output.isValid
             .bind(with: self) { owner, value in
                 let color: UIColor = value ? .systemPink : .lightGray
                 owner.nextButton.backgroundColor = color
             }
             .disposed(by: disposeBag)
         
-        nextButton.rx.tap
+        output.nextButtonTap
             .bind(with: self) { owner, _ in
                 owner.navigationController?.pushViewController(PhoneViewController(), animated: true)
             }

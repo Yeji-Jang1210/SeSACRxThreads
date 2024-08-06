@@ -7,10 +7,12 @@
 
 import UIKit
 import SnapKit
+import RxSwift
 
 final class ShoppingListTableViewCell: UITableViewCell {
     
     static let identifier = String(describing: ShoppingListTableViewCell.self)
+    var disposeBag = DisposeBag()
     
     let backView = {
         let object = UIView()
@@ -23,8 +25,8 @@ final class ShoppingListTableViewCell: UITableViewCell {
     let checkButton = {
         let object = UIButton()
         object.tintColor = .black
-        object.setImage(UIImage(systemName: "star.fill"), for: .selected)
-        object.setImage(UIImage(systemName: "star"), for: .normal)
+        object.setImage(UIImage(systemName: "checkmark.square.fill"), for: .selected)
+        object.setImage(UIImage(systemName: "checkmark.square"), for: .normal)
         return object
     }()
     
@@ -33,8 +35,8 @@ final class ShoppingListTableViewCell: UITableViewCell {
     let likeButton = {
         let object = UIButton()
         object.tintColor = .black
-        object.setImage(UIImage(systemName: "checkmark.square.fill"), for: .selected)
-        object.setImage(UIImage(systemName: "checkmark.square"), for: .normal)
+        object.setImage(UIImage(systemName: "star.fill"), for: .selected)
+        object.setImage(UIImage(systemName: "star"), for: .normal)
         return object
     }()
     
@@ -81,5 +83,32 @@ final class ShoppingListTableViewCell: UITableViewCell {
             make.trailing.equalTo(likeButton.snp.leading).offset(-20)
         }
     }
+    
+    override func prepareForReuse() {
+       super.prepareForReuse()
+       disposeBag = DisposeBag()
+   }
+    
+    func bind(to viewModel: ShoppingListTableViewCellViewModel){
+        let input = ShoppingListTableViewCellViewModel.Input(likeButtonTap: likeButton.rx.tap, checkButtonTap: checkButton.rx.tap)
+        
+        let output = viewModel.transform(input: input)
+        
+        output.title
+            .asDriver()
+            .drive(titleLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        output.isChecked
+            .asDriver()
+            .drive(checkButton.rx.isSelected)
+            .disposed(by: disposeBag)
+        
+        output.isLiked
+            .asDriver()
+            .drive(likeButton.rx.isSelected)
+            .disposed(by: disposeBag)
+    }
+    
 }
 
