@@ -9,6 +9,7 @@ import UIKit
 import SnapKit
 
 import RxSwift
+import RxDataSources
 import RxCocoa
 
 class ShoppingListViewController: UIViewController, UITableViewDelegate {
@@ -23,13 +24,17 @@ class ShoppingListViewController: UIViewController, UITableViewDelegate {
     let searchView = SearchView()
     
     private lazy var collectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
-        let object = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        let object = UICollectionView(frame: .zero, collectionViewLayout: compositionalLayout())
         object.register(SearchItemCollectionViewCell.self, forCellWithReuseIdentifier: SearchItemCollectionViewCell.identifier)
-        object.delegate = self
         return object
     }()
+    
+    private lazy var dataSource = RxCollectionViewSectionedReloadDataSource<SearchResultSectionModel>(
+        configureCell: { dataSource, tableView, indexPath, item in
+            let cell = self.collectionView.dequeueReusableCell(withReuseIdentifier: SearchItemCollectionViewCell.identifier, for: indexPath) as! SearchItemCollectionViewCell
+            cell.titleLabel.text = item
+            return cell
+        })
     
     let viewDidAppearTrigger = PublishSubject<Void>()
     let viewModel = ShoppingListViewModel()
@@ -98,27 +103,28 @@ class ShoppingListViewController: UIViewController, UITableViewDelegate {
             .disposed(by: disposeBag)
         
         output.searchItems
-            .asDriver(onErrorJustReturn: [])
-            .drive(collectionView.rx.items(cellIdentifier: SearchItemCollectionViewCell.identifier, cellType: SearchItemCollectionViewCell.self)){ row, element, cell in
-                cell.titleLabel.text = element
-            }
+            .asDriver()
+            .drive(collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
         
     }
-}
-
-extension ShoppingListViewController: UICollectionViewDelegateFlowLayout {
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let width = viewModel.searchItems.value[indexPath.row].calculateTextWidth(size: 12) + 20
-        return CGSize(width: width, height: 40)
+    
+    private func compositionalLayout() -> UICollectionViewLayout {
+        let itemSize = NSCollectionLayoutSize(widthDimension: .estimated(60), heightDimension: .absolute(40))
+        
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(60))
+        
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+        group.interItemSpacing = .fixed(12)
+        
+        let section = NSCollectionLayoutSection(group: group)
+        
+        let layout = UICollectionViewCompositionalLayout(section: section)
+        
+        return layout
     }
 }
 
-extension String {
-    func calculateTextWidth(size: CGFloat) -> CGFloat {
-        let itemSize = self.size(withAttributes: [
-                    NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: size)
-                ])
-        return itemSize.width
-    }
-}
+

@@ -42,6 +42,8 @@
 		B862B5542C60CA6500E39BD2 /* ShoppingItemDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B862B5532C60CA6500E39BD2 /* ShoppingItemDetailViewController.swift */; };
 		B889CDD52C620E0C009660E9 /* ShoppingListTableViewCellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B889CDD42C620E0C009660E9 /* ShoppingListTableViewCellViewModel.swift */; };
 		B889CDE22C635F81009660E9 /* SearchItemCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B889CDE12C635F81009660E9 /* SearchItemCollectionViewCell.swift */; };
+		B889CDE52C63C0F8009660E9 /* SearchResultSectionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B889CDE42C63C0F8009660E9 /* SearchResultSectionModel.swift */; };
+		B889CDE82C63C1C3009660E9 /* RxDataSources in Frameworks */ = {isa = PBXBuildFile; productRef = B889CDE72C63C1C3009660E9 /* RxDataSources */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -98,6 +100,7 @@
 		B862B5532C60CA6500E39BD2 /* ShoppingItemDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingItemDetailViewController.swift; sourceTree = "<group>"; };
 		B889CDD42C620E0C009660E9 /* ShoppingListTableViewCellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingListTableViewCellViewModel.swift; sourceTree = "<group>"; };
 		B889CDE12C635F81009660E9 /* SearchItemCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchItemCollectionViewCell.swift; sourceTree = "<group>"; };
+		B889CDE42C63C0F8009660E9 /* SearchResultSectionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultSectionModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +109,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				041280602AEFA0AC00972552 /* SnapKit in Frameworks */,
+				B889CDE82C63C1C3009660E9 /* RxDataSources in Frameworks */,
 				0412805D2AEFA09E00972552 /* RxSwift in Frameworks */,
 				0412805B2AEFA09E00972552 /* RxCocoa in Frameworks */,
 			);
@@ -240,12 +244,11 @@
 		B8155F8F2C60A060008B26E2 /* ShoppingList */ = {
 			isa = PBXGroup;
 			children = (
-				B8155F922C60A106008B26E2 /* ShoppingListTableViewCell.swift */,
+				B889CDE32C63C09A009660E9 /* Cell */,
 				B889CDD42C620E0C009660E9 /* ShoppingListTableViewCellViewModel.swift */,
 				B8155F902C60A06E008B26E2 /* ShoppingListViewController.swift */,
 				B862B54E2C60C58F00E39BD2 /* ShoppingListViewModel.swift */,
 				B862B5532C60CA6500E39BD2 /* ShoppingItemDetailViewController.swift */,
-				B889CDE12C635F81009660E9 /* SearchItemCollectionViewCell.swift */,
 			);
 			path = ShoppingList;
 			sourceTree = "<group>";
@@ -256,6 +259,16 @@
 				B862B5512C60C5E500E39BD2 /* SearchView.swift */,
 			);
 			path = Custom;
+			sourceTree = "<group>";
+		};
+		B889CDE32C63C09A009660E9 /* Cell */ = {
+			isa = PBXGroup;
+			children = (
+				B889CDE12C635F81009660E9 /* SearchItemCollectionViewCell.swift */,
+				B8155F922C60A106008B26E2 /* ShoppingListTableViewCell.swift */,
+				B889CDE42C63C0F8009660E9 /* SearchResultSectionModel.swift */,
+			);
+			path = Cell;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -278,6 +291,7 @@
 				0412805A2AEFA09E00972552 /* RxCocoa */,
 				0412805C2AEFA09E00972552 /* RxSwift */,
 				0412805F2AEFA0AC00972552 /* SnapKit */,
+				B889CDE72C63C1C3009660E9 /* RxDataSources */,
 			);
 			productName = SeSACRxThreads;
 			productReference = 041280202AEF9BAB00972552 /* SeSACRxThreads.app */;
@@ -354,6 +368,7 @@
 			packageReferences = (
 				041280592AEFA09D00972552 /* XCRemoteSwiftPackageReference "RxSwift" */,
 				0412805E2AEFA0AC00972552 /* XCRemoteSwiftPackageReference "SnapKit" */,
+				B889CDE62C63C1C3009660E9 /* XCRemoteSwiftPackageReference "RxDataSources" */,
 			);
 			productRefGroup = 041280212AEF9BAB00972552 /* Products */;
 			projectDirPath = "";
@@ -422,6 +437,7 @@
 				041280712AEFAD3D00972552 /* PhoneViewController.swift in Sources */,
 				B8155F932C60A106008B26E2 /* ShoppingListTableViewCell.swift in Sources */,
 				B8155F972C60B781008B26E2 /* PhoneViewModel.swift in Sources */,
+				B889CDE52C63C0F8009660E9 /* SearchResultSectionModel.swift in Sources */,
 				041280262AEF9BAB00972552 /* SceneDelegate.swift in Sources */,
 				041280582AEFA05300972552 /* SignInViewModel.swift in Sources */,
 			);
@@ -786,6 +802,14 @@
 				minimumVersion = 5.6.0;
 			};
 		};
+		B889CDE62C63C1C3009660E9 /* XCRemoteSwiftPackageReference "RxDataSources" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RxSwiftCommunity/RxDataSources.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -803,6 +827,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0412805E2AEFA0AC00972552 /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
+		};
+		B889CDE72C63C1C3009660E9 /* RxDataSources */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B889CDE62C63C1C3009660E9 /* XCRemoteSwiftPackageReference "RxDataSources" */;
+			productName = RxDataSources;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

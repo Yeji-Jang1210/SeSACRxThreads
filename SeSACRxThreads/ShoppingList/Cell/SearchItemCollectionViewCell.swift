@@ -22,7 +22,7 @@ class SearchItemCollectionViewCell: UICollectionViewCell {
         titleLabel.font = .systemFont(ofSize: 12)
         titleLabel.textAlignment = .center
         titleLabel.snp.makeConstraints { make in
-            make.edges.equalTo(contentView)
+            make.edges.equalTo(contentView).inset(12)
         }
         
         backgroundColor = .systemGray6

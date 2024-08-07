@@ -37,7 +37,7 @@ struct SearchLists {
 
 class ShoppingListViewModel {
     let disposeBag = DisposeBag()
-    let searchItems = BehaviorRelay<[String]>(value: SearchLists.lists)
+    let searchItems = BehaviorRelay<[SearchResultSectionModel]>(value: [SearchResultSectionModel(items: SearchLists.lists)])
     
     struct Input {
         let viewDidAppear: Observable<Void>
@@ -50,7 +50,7 @@ class ShoppingListViewModel {
     struct Output {
         let shoppingItems: BehaviorRelay<[ShoppingListTableViewCellViewModel]>
         let tableViewModelSelected: ControlEvent<ShoppingListTableViewCellViewModel>
-        let searchItems: BehaviorRelay<[String]>
+        let searchItems: BehaviorRelay<[SearchResultSectionModel]>
     }
     
     func transform(input: Input) -> Output {
