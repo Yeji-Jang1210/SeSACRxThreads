@@ -19,7 +19,17 @@ class ShoppingListViewController: UIViewController, UITableViewDelegate {
         object.rowHeight = 48
         return object
     }()
+    
     let searchView = SearchView()
+    
+    private lazy var collectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        let object = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        object.register(SearchItemCollectionViewCell.self, forCellWithReuseIdentifier: SearchItemCollectionViewCell.identifier)
+        object.delegate = self
+        return object
+    }()
     
     let viewDidAppearTrigger = PublishSubject<Void>()
     let viewModel = ShoppingListViewModel()
@@ -42,26 +52,33 @@ class ShoppingListViewController: UIViewController, UITableViewDelegate {
     }
     
     private func configureHierarchy(){
-        view.addSubview(tableView)
         view.addSubview(searchView)
+        view.addSubview(collectionView)
+        view.addSubview(tableView)
     }
     
     private func configureLayout(){
-        tableView.snp.makeConstraints { make in
-            make.top.equalTo(searchView.snp.bottom).offset(20)
-            make.horizontalEdges.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
-        }
-        
         searchView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(20)
             make.height.equalTo(80)
         }
+        
+        collectionView.snp.makeConstraints { make in
+            make.top.equalTo(searchView.snp.bottom).offset(20)
+            make.horizontalEdges.equalToSuperview()
+            make.height.equalTo(50)
+        }
+        
+        tableView.snp.makeConstraints { make in
+            make.top.equalTo(collectionView.snp.bottom).offset(20)
+            make.horizontalEdges.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
+        }
     }
     
     private func bind(){
         let input = ShoppingListViewModel.Input(viewDidAppear: viewDidAppearTrigger,
-                                                searchText: searchView.searchTextField.rx.text.orEmpty, tableViewModelSelected: tableView.rx.modelSelected(ShoppingListTableViewCellViewModel.self),
+                                                searchText: searchView.searchTextField.rx.text.orEmpty, tableViewModelSelected: tableView.rx.modelSelected(ShoppingListTableViewCellViewModel.self), collectionViewModelSelected: collectionView.rx.modelSelected(String.self),
                                                 addButtonTap: searchView.searchButton.rx.tap)
         
         let output = viewModel.transform(input: input)
@@ -73,12 +90,35 @@ class ShoppingListViewController: UIViewController, UITableViewDelegate {
             }
             .disposed(by: disposeBag)
         
-        output.items
+        output.shoppingItems
             .asDriver(onErrorJustReturn: [])
             .drive(tableView.rx.items(cellIdentifier: ShoppingListTableViewCell.identifier, cellType: ShoppingListTableViewCell.self)) { indexPath, viewModel, cell in
                 cell.bind(to: viewModel)
             }
             .disposed(by: disposeBag)
         
+        output.searchItems
+            .asDriver(onErrorJustReturn: [])
+            .drive(collectionView.rx.items(cellIdentifier: SearchItemCollectionViewCell.identifier, cellType: SearchItemCollectionViewCell.self)){ row, element, cell in
+                cell.titleLabel.text = element
+            }
+            .disposed(by: disposeBag)
+        
+    }
+}
+
+extension ShoppingListViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let width = viewModel.searchItems.value[indexPath.row].calculateTextWidth(size: 12) + 20
+        return CGSize(width: width, height: 40)
+    }
+}
+
+extension String {
+    func calculateTextWidth(size: CGFloat) -> CGFloat {
+        let itemSize = self.size(withAttributes: [
+                    NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: size)
+                ])
+        return itemSize.width
     }
 }
